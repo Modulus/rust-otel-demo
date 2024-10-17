@@ -1,0 +1,40 @@
+version: '3'
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    ports:
+      - "5050:5000"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:5000/v1/logs
+      OTEL_EXPORTER_METRICS_OTEL_REST_ENDPOINT: http://localhost:5000/v1/metrics
+    networks:
+      - rust-otel-demo
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    environment:
+      - GF_INSTALL_PLUGINS=opentelemetry-collector-exporter
+    # volumes: 
+    #   - loki-data:/loki
+    networks:
+      - rust-otel-demo
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "9090:3000"
+    environment:
+      - GF_LOKI_URL=http://loki:3100/loki/api/v1/push
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - rust-otel-demo
+networks:
+  rust-otel-demo:
+    driver: bridge
+volumes:
+  grafana-data:
+  loki-data:
+  otel-collector-data:  
