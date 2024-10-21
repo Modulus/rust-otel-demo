@@ -96,8 +96,8 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     let layer = OpenTelemetryTracingBridge::new(&logger_provider);
     info!(name: "my-event", target: "my-target", "hello from {}. My price is {}", "apple", 1.99);
     let filter = EnvFilter::new("info")
-        .add_directive("hyper=error".parse().unwrap())
-        .add_directive("tonic=error".parse().unwrap())
+        // .add_directive("hyper=error".parse().unwrap())
+        // .add_directive("tonic=error".parse().unwrap())
         .add_directive("reqwest=error".parse().unwrap());
 
     tracing_subscriber::registry()
