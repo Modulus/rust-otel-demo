@@ -9,7 +9,6 @@ use opentelemetry_appender_log::OpenTelemetryLogBridge;
 use opentelemetry_sdk::logs::{BatchLogProcessor, LoggerProvider};
 use opentelemetry_sdk::runtime;
 use opentelemetry_stdout::LogExporter;
-use opentelemetry_otlp::ExportConfig;
 
 #[tokio::main]
 async fn main() {

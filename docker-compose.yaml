@@ -4,6 +4,7 @@ services:
     image: otel/opentelemetry-collector:latest
     ports:
       - "4317:4317"
+      - "4318:4318"
       - "55679:55679"
     # environment:
     #   OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:5000/v1/logs
@@ -12,7 +13,8 @@ services:
     configs:
       - source: otel-collector-config
         target: /etc/otel-collector-config.yaml
-
+    depends_on:
+      - loki
     # networks:
     #   - rust-otel-demo
   loki:
@@ -25,6 +27,9 @@ services:
     #   - loki-data:/loki
     # networks:
     #   - rust-otel-demo
+    configs:
+      - source: loki-config
+        target: /config/config.yaml
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -33,19 +38,23 @@ services:
       - GF_LOKI_URL=http://loki:3100/loki/api/v1/push
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=password
-    volumes:
-      - grafana-data:/var/lib/grafana
+    # volumes:
+    #   - grafana-data:/var/lib/grafana
 #     networks:
 #       - rust-otel-demo
 # networks:
 #   rust-otel-demo:
 #     driver: bridge
-volumes:
-  grafana-data:
-  loki-data:
-  otel-collector-data:  
+# volumes:
+  # grafana-data:
+  # loki-data:
+  # otel-collector-data:  
 
 configs:
+  loki-config:
+    content: | 
+      limits_config:
+        allow_structured_metadata: true
   otel-collector-config:
     content: | 
       receivers:
@@ -55,20 +64,23 @@ configs:
               endpoint: 0.0.0.0:4317
             http:
               endpoint: 0.0.0.0:4318
-
+        otlp/2:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:55690
       exporters:
         debug:
           verbosity: detailed
-      otlphttp:
-        endpoint: http://loki:3100/otlp/v1/logs
+        otlphttp:
+          endpoint: http://loki:3100/otlp
       service:
         pipelines:
           traces:
             receivers: [otlp]
             exporters: [debug]
           metrics:
-            receivers: [otlp, prometheus]
+            receivers: [otlp]
             exporters: [debug]
           logs:
-            receivers: [otlp, loki]
+            receivers: [otlp]
             exporters: [debug, otlphttp]
