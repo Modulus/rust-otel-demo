@@ -62,7 +62,7 @@ fn init_logs() -> Result<opentelemetry_sdk::logs::LoggerProvider, LogError> {
         .with_exporter(
             opentelemetry_otlp::new_exporter()
                 .tonic()
-                .with_endpoint("http://localhost:4318"),
+                .with_endpoint("http://localhost:4317"),
         )
         .install_batch(runtime::Tokio)
 }
