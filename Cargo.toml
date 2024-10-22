@@ -7,12 +7,10 @@ default-run = "rust-otel-demo"
 
 [dependencies]
 axum = "0.7.7"
-http = "1.1.0"
 log = { version = "0.4.22", features = ["serde"] }
 opentelemetry = { version = "0.26.0", features = ["logs", "metrics"] }
 opentelemetry-appender-log = { version = "0.26.0", features = ["serde"] }
 opentelemetry-appender-tracing = "0.26.0"
-opentelemetry-http = "0.26.0"
 opentelemetry-otlp = { version = "0.26.0", features = ["metrics", "tonic", "logs"] }
 opentelemetry-semantic-conventions = "0.26.0"
 opentelemetry-stdout = "0.26.0"
