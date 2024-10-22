@@ -12,17 +12,17 @@ use opentelemetry_otlp::{ExportConfig, WithExportConfig};
 use opentelemetry_sdk::trace::Config;
 use opentelemetry_sdk::{runtime, trace as sdktrace, Resource};
 use std::error::Error;
-use tracing::info;
+use tracing;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 use std::sync::LazyLock;
-
+use log;
 
 //TODO: READ UP ON THIS!!
 static RESOURCE: LazyLock<Resource> = LazyLock::new(|| {
     Resource::new(vec![KeyValue::new(
         opentelemetry_semantic_conventions::resource::SERVICE_NAME,
-        "basic-otlp-example",
+        "rust-otel-demo",
     )])
 });
 
@@ -62,7 +62,7 @@ fn init_logs() -> Result<opentelemetry_sdk::logs::LoggerProvider, LogError> {
         .with_exporter(
             opentelemetry_otlp::new_exporter()
                 .tonic()
-                .with_endpoint("http://localhost:4317"),
+                .with_endpoint("http://localhost:4318"),
         )
         .install_batch(runtime::Tokio)
 }
@@ -94,10 +94,9 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
 
     // Create a new OpenTelemetryTracingBridge using the above LoggerProvider.
     let layer = OpenTelemetryTracingBridge::new(&logger_provider);
-    info!(name: "my-event", target: "my-target", "hello from {}. My price is {}", "apple", 1.99);
     let filter = EnvFilter::new("info")
-        // .add_directive("hyper=error".parse().unwrap())
-        // .add_directive("tonic=error".parse().unwrap())
+        .add_directive("hyper=error".parse().unwrap())
+        .add_directive("tonic=error".parse().unwrap())
         .add_directive("reqwest=error".parse().unwrap());
 
     tracing_subscriber::registry()
@@ -105,7 +104,14 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         .with(layer)
         .init();
 
-        let common_scope_attributes = vec![KeyValue::new("scope-key", "scope-value")];
+    tracing::info!(name: "my-event", target: "my-target", "hello from {}. My price is {}", "apple", 1.99);
+    tracing::info!(name: "my-event", target: "my-target", "hello from {}. My price is {}", "apple", 1.99);
+    tracing::info!(name: "my-event", target: "my-target", "hello from {}. My price is {}", "apple", 1.99);
+    log::info!("Testing regular log");
+    log::error!("Testing regular error");
+    
+
+    let common_scope_attributes = vec![KeyValue::new("scope-key", "scope-value")];
     let tracer = global::tracer_provider()
         .tracer_builder("basic")
         .with_attributes(common_scope_attributes.clone())
@@ -134,7 +140,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         );
         span.set_attribute(KeyValue::new("another.key", "yes"));
 
-        info!(name: "my-event-inside-span", target: "my-target", "hello from {}. My price is {}. I am also inside a Span!", "banana", 2.99);
+        tracing::info!(name: "my-event-inside-span", target: "my-target", "hello from {}. My price is {}. I am also inside a Span!", "banana", 2.99);
 
         tracer.in_span("Sub operation...", |cx| {
             let span = cx.span();
